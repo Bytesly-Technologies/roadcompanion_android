@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Road Companion</string>
+    <string name="userspage_emptylist_text">No parking codes added! Press the button to add a code for easy acess.</string>
+    <string name="yes_btn">Yes</string>
+    <string name="no_btn">No</string>
+    <string name="are_you_sure_to_delete_code">Are you sure you want to delete %s</string>
+    <string name="which_number_to_check_out">Please type the new code</string>
+    <string name="cancel_btn">Cancel</string>
+    <string name="invalid_code_toast">Code is invalid</string>
+    <string name="success">Success!</string>
+    <string name="parking_status_header">Parking Status:</string>
+    <string name="parking_status_disabled">Disabled</string>
+    <string name="start_button">Start</string>
+    <string name="add_code_button">Add Code</string>
+    <string name="parking_status_enabled_text">Enabled</string>
+    <string name="parking_status_disabled_text">Disabled</string>
+    <string name="stop_button">Stop</string>
+    <string name="copied_toastmsg">Copied!</string>
+    <string name="ask_parking_message">აქტივობის თვალთვალი %s. გსურთ Tbilisi Parking აპლიკაციის გახსნა?</string>
+    <string name="tracking_status_started">დაწყებულია</string>
+    <string name="tracking_status_stopped">შეწყვეტილია</string>
+    <string name="ok_button">OK</string>
+    <string name="reminder_notification_title">Road Companion Reminder</string>
+    <string name="reminder_notification_text">Don\'t forget to turn off parking</string>
+    <string name="reminder_notifchannel_title">Reminders</string>
+    <string name="reminder_notifchannel_description">Parking reminders</string>
+    <string name="persistent_notification_text">Tracking is enabled</string>
+</resources>

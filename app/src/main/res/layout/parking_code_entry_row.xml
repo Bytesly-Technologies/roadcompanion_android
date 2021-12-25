@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/parkingcode_entry_row"
+    android:background="@drawable/parkingcode_row_roundedbg"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="6dp"
+    android:layout_marginTop="6dp">
+
+    <TextView
+        android:id="@+id/parkingcode_entry_code"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/parkingcode_copy_icon"
+        android:text="Lorem ipsum dolor sit amet"
+        android:textColor="@color/white"
+        android:textSize="24sp" />
+
+    <ImageView
+        android:id="@+id/parkingcode_copy_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@id/parkingcode_delete_icon"
+        android:src="@drawable/ic_baseline_content_copy_24"
+        app:tint="@color/white" />
+
+    <ImageView
+        android:id="@+id/parkingcode_delete_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        app:tint="@color/white"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_baseline_delete_24" />
+</RelativeLayout>
