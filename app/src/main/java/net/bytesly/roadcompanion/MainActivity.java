@@ -74,14 +74,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void openParkingApp() {
-        PackageManager pm = getPackageManager();
-        Intent intent = pm.getLaunchIntentForPackage("ge.msda.parking");
-        if (intent != null) {
-            startActivity(intent);
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,6 +139,15 @@ public class MainActivity extends AppCompatActivity {
                 askOpenParking();
             }
         });
+    }
+
+
+    private void openParkingApp() {
+        PackageManager pm = getPackageManager();
+        Intent intent = pm.getLaunchIntentForPackage("ge.msda.parking");
+        if (intent != null) {
+            startActivity(intent);
+        }
     }
 
     private void askOpenParking() {
