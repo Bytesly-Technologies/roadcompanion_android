@@ -3,16 +3,30 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release_config {
+            storeFile file('C:\\Users\\Vladislav\\keystores\\bytesly-upload-keystore.jks')
+            storePassword 'Ladowashere'
+            keyAlias 'upload_key'
+            keyPassword 'Ladowashere'
+        }
+    }
     compileSdk 31
 
     defaultConfig {
         applicationId "net.bytesly.roadcompanion"
         minSdk 24
         targetSdk 31
-        versionCode 1
-        versionName "0.1-alpha"
+        versionCode 3
+        versionName "0.2.1-alpha"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.release_config
+    }
+    bundle {
+        language {
+            enableSplit = false
+        }
     }
 
     buildTypes {
@@ -25,6 +39,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    compileSdkVersion 31
+    buildToolsVersion '31.0.0'
 }
 
 dependencies {
@@ -39,5 +55,5 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:18.0.0'
 
     //Billing
-    implementation 'com.anjlab.android.iab.v3:library:2.0.3'
+    implementation 'com.android.billingclient:billing:4.0.0'
 }

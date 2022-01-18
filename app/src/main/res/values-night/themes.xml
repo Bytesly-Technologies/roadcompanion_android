@@ -12,5 +12,11 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+        <item name="android:navigationBarColor">@color/purple_200</item>
+    </style>
+
+    <style name="Theme.RoadCompanion.NoActionBar" parent="Theme.RoadCompanion">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>

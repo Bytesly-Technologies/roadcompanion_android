@@ -12,6 +12,7 @@ import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
@@ -27,11 +28,13 @@ import com.google.android.gms.location.DetectedActivity;
 
 import net.bytesly.roadcompanion.MainActivity;
 import net.bytesly.roadcompanion.R;
+import net.bytesly.roadcompanion.util.LocaleUtils;
 import net.bytesly.roadcompanion.util.MyUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class DetectedActivityReceiver  extends BroadcastReceiver {
 
@@ -78,6 +81,8 @@ public class DetectedActivityReceiver  extends BroadcastReceiver {
     private void showNotification(Context context) {
         createNotificationChannel(context);
 
+        Resources localizedResources = LocaleUtils.getLocalizedResources(context, Locale.forLanguageTag(LocaleUtils.getPrefLangCode(context)));
+
         Intent intent = new Intent(context, MainActivity.class).putExtra(SUPPORTED_ACTIVITY_KEY, "openParkingApp");
 
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
@@ -85,8 +90,9 @@ public class DetectedActivityReceiver  extends BroadcastReceiver {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, DETECTED_ACTIVITY_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle(context.getString(R.string.reminder_notification_title))
-                .setContentText(context.getString(R.string.reminder_notification_text))
+                .setContentTitle(
+                        localizedResources.getString(R.string.reminder_notification_title))
+                .setContentText(localizedResources.getString(R.string.reminder_notification_text))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setOnlyAlertOnce(false)
                 .setContentIntent(pendingIntent)
@@ -111,11 +117,13 @@ public class DetectedActivityReceiver  extends BroadcastReceiver {
     }
 
     private void createNotificationChannel(Context context) {
+        Resources localizedResources = LocaleUtils.getLocalizedResources(context, Locale.forLanguageTag(LocaleUtils.getPrefLangCode(context)));
+
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = context.getString(R.string.reminder_notifchannel_title);
-            String description = context.getString(R.string.reminder_notifchannel_description);
+            CharSequence name = localizedResources.getString(R.string.reminder_notifchannel_title);
+            String description = localizedResources.getString(R.string.reminder_notifchannel_description);
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(DETECTED_ACTIVITY_CHANNEL_ID, name, importance);
             channel.setDescription(description);

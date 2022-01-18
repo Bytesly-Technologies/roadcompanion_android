@@ -4,11 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:context=".ManagePaymentActivity"
     android:background="@drawable/main_screen_bg">
 
     <LinearLayout
-        android:id="@+id/linearLayoutNotYetPaid"
         android:visibility="gone"
+        android:id="@+id/linearLayoutCurrentStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -22,9 +23,27 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textColor="@color/white"
+            android:text="@string/current_plan" />
+
+        <TextView
+            android:id="@+id/textViewCurrentPlanName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="24sp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
-            android:text="@string/please_choose_plan" />
+            android:textColor="@color/white"
+            android:text="3-თვიანი გამოწერა (net.bytesly.roadcompanion)" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/white"
+            android:text="@string/change_plan" />
 
         <Button
             android:id="@+id/buttonSubscribe3M"
@@ -51,33 +70,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textColor="@color/white"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:textStyle="italic"
-            android:justificationMode="inter_word"
-            android:text="@string/free_trial_explanation" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="4dp"
             android:textColor="@color/white"
             android:text="@string/manage_subscriptions_on_google" />
 
 
         <Button
             style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:id="@+id/buttonGoToGooglePlayFromSuccess"
+            android:id="@+id/buttonGoToGooglePlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/btn_goto_googleplay"/>
+
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="gone"
+        android:visibility="visible"
         android:id="@+id/linearLayoutCheckingPayment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -91,8 +100,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/checking_subscription_status"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white"
+            android:text="@string/checking_subscription_status" />
 
         <ProgressBar
             android:layout_width="match_parent"
@@ -102,7 +111,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="visible"
+        android:visibility="gone"
         android:id="@+id/linearLayoutErrorOccurred"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -133,23 +142,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/btn_tryagain" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="16dp"
-            android:textColor="@color/white"
-            android:text="@string/manage_subscriptions_on_google" />
-
-
-        <Button
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:id="@+id/buttonGoToGooglePlayFromError"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/btn_goto_googleplay"/>
 
     </LinearLayout>
 

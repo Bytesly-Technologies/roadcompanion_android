@@ -3,7 +3,6 @@ package net.bytesly.roadcompanion.detectedactivity;
 import static net.bytesly.roadcompanion.util.MyUtils.DETECTED_ACTIVITY_CHANNEL_ID;
 import static net.bytesly.roadcompanion.util.MyUtils.DETECTED_ACTIVITY_NOTIFICATION_ID;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,6 +10,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
@@ -30,7 +30,10 @@ import com.google.android.gms.tasks.Task;
 
 import net.bytesly.roadcompanion.MainActivity;
 import net.bytesly.roadcompanion.R;
+import net.bytesly.roadcompanion.util.LocaleUtils;
 import net.bytesly.roadcompanion.util.TransitionHelper;
+
+import java.util.Locale;
 
 public class DetectedActivityService extends Service {
 
@@ -50,6 +53,9 @@ public class DetectedActivityService extends Service {
         super.onCreate();
         requestActivityTransitionUpdates();
 
+        Resources localizedResources = LocaleUtils.getLocalizedResources(getApplicationContext(), Locale.forLanguageTag(LocaleUtils.getPrefLangCode(getApplicationContext())));
+
+
         createNotificationChannel(getApplicationContext());
 
         Intent intent = new Intent(this, MainActivity.class);
@@ -57,8 +63,8 @@ public class DetectedActivityService extends Service {
 
         Notification notification = new NotificationCompat.Builder(this, DETECTED_ACTIVITY_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.persistent_notification_text))
+            .setContentTitle(localizedResources.getString(R.string.app_name))
+            .setContentText(localizedResources.getString(R.string.persistent_notification_text))
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build();
@@ -69,11 +75,12 @@ public class DetectedActivityService extends Service {
     }
 
     private void createNotificationChannel(Context context) {
+        Resources localizedResources = LocaleUtils.getLocalizedResources(context, Locale.forLanguageTag(LocaleUtils.getPrefLangCode(context)));
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = getString(R.string.reminder_notifchannel_title);
-            String description = getString(R.string.reminder_notifchannel_description);
+            CharSequence name = localizedResources.getString(R.string.reminder_notifchannel_title);
+            String description = localizedResources.getString(R.string.reminder_notifchannel_description);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(DETECTED_ACTIVITY_CHANNEL_ID, name, importance);
             channel.setDescription(description);

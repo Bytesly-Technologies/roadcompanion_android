@@ -1,12 +1,11 @@
 package net.bytesly.roadcompanion;
 
 import static net.bytesly.roadcompanion.util.MyUtils.SUPPORTED_ACTIVITY_KEY;
+import static net.bytesly.roadcompanion.util.MyUtils.isPackageInstalled;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,8 +15,12 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,20 +28,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.location.DetectedActivity;
-
 import net.bytesly.roadcompanion.adapter.ParkingCodesAdapter;
-import net.bytesly.roadcompanion.detectedactivity.DetectedActivityReceiver;
 import net.bytesly.roadcompanion.detectedactivity.DetectedActivityService;
 import net.bytesly.roadcompanion.util.MyUtils;
-import net.bytesly.roadcompanion.util.TransitionHelper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends LocalizedActivity {
 
     Button buttonOpenParking;
     Button buttonAddCode;
@@ -78,6 +77,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if(!isPackageInstalled(MyUtils.TB_PARKING_PACKAGE_NAME, getPackageManager())) {
+            Toast.makeText(this, "პირველ რიგში დააყენეთ Tbilisi Parking", Toast.LENGTH_SHORT).show();
+            goToTbilisiParkingInstallPage();
+        }
 
         buttonOpenParking = findViewById(R.id.buttonOpenParking);
         buttonAddCode = findViewById(R.id.buttonAddParkingCode);
@@ -135,18 +139,62 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                 }
-
                 askOpenParking();
             }
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.main_menu_settings_item:
+//                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+//                startActivity(settingsIntent);
+                return true;
+            case R.id.main_menu_managesubscriptions_item:
+                Intent settingsIntent = new Intent(MainActivity.this, ManagePaymentActivity.class);
+                startActivity(settingsIntent);
+                return true;
+            case R.id.main_menu_about_item:
+                Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
+                startActivity(aboutIntent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
 
     private void openParkingApp() {
+
         PackageManager pm = getPackageManager();
-        Intent intent = pm.getLaunchIntentForPackage("ge.msda.parking");
-        if (intent != null) {
-            startActivity(intent);
+        if(MyUtils.isPackageInstalled(MyUtils.TB_PARKING_PACKAGE_NAME, pm)) {
+            Intent intent = pm.getLaunchIntentForPackage(MyUtils.TB_PARKING_PACKAGE_NAME);
+            if (intent != null) {
+                startActivity(intent);
+            }
+            else {
+                Toast.makeText(MainActivity.this, "Tbilisi Parking აპლიკაციის გახსნა ვერ მოხერხდა", Toast.LENGTH_SHORT).show();
+            }
+        }
+        else {
+            goToTbilisiParkingInstallPage();
+        }
+
+    }
+
+    private void goToTbilisiParkingInstallPage() {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + MyUtils.TB_PARKING_PACKAGE_NAME)));
+        } catch (android.content.ActivityNotFoundException anfe) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + MyUtils.TB_PARKING_PACKAGE_NAME)));
         }
     }
 

@@ -1,14 +1,10 @@
 package net.bytesly.roadcompanion;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import net.bytesly.roadcompanion.util.MyUtils;
-
-public class MyAppIntroActivity extends AppCompatActivity {
+public class MyAppIntroActivity extends LocalizedActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,22 +12,17 @@ public class MyAppIntroActivity extends AppCompatActivity {
         setContentView(R.layout.activity_my_app_intro);
 
         if(!AppController.getInstance().shouldShowIntroActivity) {
-            startMainActivity();
+            startPaymentCheckActivity();
         }
         else {
             AppController.getInstance().shouldShowIntroActivity = false;
 
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    startMainActivity();
-                }
-            }, 2000);
+            new Handler().postDelayed(this::startPaymentCheckActivity, 2000);
         }
     }
 
-    private void startMainActivity() {
-        Intent intent = new Intent(MyAppIntroActivity.this, MainActivity.class);
+    private void startPaymentCheckActivity() {
+        Intent intent = new Intent(MyAppIntroActivity.this, PaymentGatewayActivity.class);
         startActivity(intent);
         finish();
     }

@@ -8,10 +8,9 @@
 
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".AppController"
@@ -22,34 +21,37 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.RoadCompanion">
         <activity
+            android:name=".ManagePaymentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PaymentGatewayActivity"
+            android:exported="false" />
+        <activity
             android:name=".MyAppIntroActivity"
-            android:screenOrientation="portrait"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
-
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.RoadCompanion.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
         <activity
             android:name=".MainActivity"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-
         <service android:name=".detectedactivity.DetectedActivityService" />
-        <receiver android:name=".detectedactivity.DetectedActivityReceiver"/>
 
+        <receiver android:name=".detectedactivity.DetectedActivityReceiver" />
     </application>
-
 
 </manifest>

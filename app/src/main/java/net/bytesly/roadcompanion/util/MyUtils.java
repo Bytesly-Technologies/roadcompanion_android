@@ -1,5 +1,10 @@
 package net.bytesly.roadcompanion.util;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
+
+import net.bytesly.roadcompanion.R;
+
 public class MyUtils {
     public static final String KEY_IS_TRACKING_STARTED = "is_tracking_started";
 
@@ -18,5 +23,33 @@ public class MyUtils {
 
     public static final int DETECTED_ACTIVITY_NOTIFICATION_ID = 10;
 
+    public static final String TB_PARKING_PACKAGE_NAME = "ge.msda.parking";
+
+    public static final String PLAY_STORE_SUBSCRIPTION_URL = "https://play.google.com/store/account/subscriptions";
+    public static final String PLAY_STORE_SUBSCRIPTION_DEEPLINK_URL = "https://play.google.com/store/account/subscriptions?sku=%s&package=%s";
+
+    public static String getSkuNameWithoutAppName(Context ctx, String originalName) {
+        return originalName.replace(" (" + ctx.getString(R.string.app_name) + ")", "");
+    }
+
+    public static String getCountryCode(String langCode) {
+        switch (langCode) {
+            case "en":
+                return "US";
+            case "ka":
+                return "GE";
+            default:
+                return "US";
+        }
+    }
+
+    public static boolean isPackageInstalled(String packageName, PackageManager packageManager) {
+        try {
+            packageManager.getPackageInfo(packageName, 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
 
 }

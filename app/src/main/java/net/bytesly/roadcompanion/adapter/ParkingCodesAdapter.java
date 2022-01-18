@@ -1,6 +1,5 @@
 package net.bytesly.roadcompanion.adapter;
 
-import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -18,17 +17,10 @@ import androidx.annotation.NonNull;
 import androidx.core.widget.ImageViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import net.bytesly.roadcompanion.AppController;
-import net.bytesly.roadcompanion.MainActivity;
 import net.bytesly.roadcompanion.R;
-
-import org.w3c.dom.Text;
-
-import java.util.HashSet;
 import java.util.List;
 
 public class ParkingCodesAdapter extends RecyclerView.Adapter<ParkingCodesAdapter.ViewHolder> {
-
     LayoutInflater mInflater;
     List<String> codeList;
     Context mContext;
