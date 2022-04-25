@@ -75,7 +75,6 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
         buttonGoToGooglePlayFromSuccess = findViewById(R.id.buttonGoToGooglePlayFromSuccess);
         buttonGoToGooglePlayFromError = findViewById(R.id.buttonGoToGooglePlayFromError);
 
-
         billingClient = BillingClient.newBuilder(this)
                 .enablePendingPurchases().setListener(this).build();
 
@@ -143,7 +142,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(PaymentGatewayActivity.this, "purchase found, go to main",Toast.LENGTH_SHORT).show();
+                            //Toast.makeText(PaymentGatewayActivity.this, "purchase found, go to main",Toast.LENGTH_SHORT).show();
                         }
                     });
                     initMainScreen();

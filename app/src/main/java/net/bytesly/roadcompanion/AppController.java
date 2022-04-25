@@ -36,6 +36,9 @@ public class AppController extends Application {
 
         LocaleUtils.setPrefLangCode(this,"ka");
         LocaleUtils.setPrefCountryCode(this, MyUtils.getCountryCode("ka"));
+
+        setParkingNotificationTimes(getParkingNotificationTimes());
+        setNotificationSoundStatus(getNotificationSoundStatus());
     }
 
     public static synchronized AppController getInstance() {
@@ -43,13 +46,13 @@ public class AppController extends Application {
     }
 
 
-    public Integer getParkingNotificationInterval() {
+    public Integer getParkingNotificationTimes() {
         return PreferenceManager.getDefaultSharedPreferences(this)
-                .getInt("parking_notif_interval", 0);
+                .getInt("notif_times", 0);
     }
-    public void setParkingNotificationInterval(Integer interval) {
+    public void setParkingNotificationTimes(Integer times) {
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
-        editor.putInt("parking_notif_interval", interval);
+        editor.putInt("notif_times", times);
         editor.apply();
     }
 
@@ -61,5 +64,15 @@ public class AppController extends Application {
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
         editor.putStringSet("parking_codes", codeSet);
         editor.commit();
+    }
+
+    public Boolean getNotificationSoundStatus() {
+        return PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean("notif_soundon", true);
+    }
+    public void setNotificationSoundStatus(Boolean status) {
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putBoolean("notif_soundon", status);
+        editor.apply();
     }
 }

@@ -3,6 +3,7 @@ package net.bytesly.roadcompanion.detectedactivity;
 import static net.bytesly.roadcompanion.util.MyUtils.DETECTED_ACTIVITY_CHANNEL_ID;
 import static net.bytesly.roadcompanion.util.MyUtils.DETECTED_ACTIVITY_NOTIFICATION_ID;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -14,6 +15,7 @@ import android.content.res.Resources;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -37,6 +39,9 @@ import java.util.Locale;
 
 public class DetectedActivityService extends Service {
 
+    public static int ALARM_TYPE_ELAPSED = 201;
+    private static AlarmManager alarmManagerElapsed;
+    private static PendingIntent alarmIntentElapsed;
 
     class LocalBinder extends Binder {
         DetectedActivityService serverInstance = (DetectedActivityService) DetectedActivityService.this;
@@ -55,14 +60,13 @@ public class DetectedActivityService extends Service {
 
         Resources localizedResources = LocaleUtils.getLocalizedResources(getApplicationContext(), Locale.forLanguageTag(LocaleUtils.getPrefLangCode(getApplicationContext())));
 
-
         createNotificationChannel(getApplicationContext());
 
         Intent intent = new Intent(this, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
         Notification notification = new NotificationCompat.Builder(this, DETECTED_ACTIVITY_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.mipmap.ic_roadcompanion)
             .setContentTitle(localizedResources.getString(R.string.app_name))
             .setContentText(localizedResources.getString(R.string.persistent_notification_text))
             .setContentIntent(pendingIntent)
@@ -72,6 +76,28 @@ public class DetectedActivityService extends Service {
         int notif_id = 123;
 
         startForeground(notif_id, notification);
+    }
+
+    public static void scheduleRepeatingElapsedNotification(Context context) {
+        //Setting intent to class where notification will be handled
+        Intent intent = new Intent(context, MyRepeatingAlarmReceiver.class);
+
+        alarmIntentElapsed = PendingIntent.getBroadcast(context, ALARM_TYPE_ELAPSED, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        //getting instance of AlarmManager service
+        alarmManagerElapsed = (AlarmManager)context.getSystemService(ALARM_SERVICE);
+
+        //Inexact alarm everyday since device is booted up. This is a better choice and
+        //scales well when device time settings/locale is changed
+        //We're setting alarm to fire notification after 15 minutes, and every 15 minutes there on
+        alarmManagerElapsed.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + AlarmManager.INTERVAL_FIFTEEN_MINUTES, alarmIntentElapsed);
+    }
+
+    public static void cancelAlarmElapsed() {
+        if (alarmManagerElapsed!= null) {
+            alarmManagerElapsed.cancel(alarmIntentElapsed);
+        }
     }
 
     private void createNotificationChannel(Context context) {
@@ -104,12 +130,12 @@ public class DetectedActivityService extends Service {
         task.addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Log.d("ActivityUpdate", "activity update success");
+                //Log.d("ActivityUpdate", "activity update success");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.d("ActivityUpdate", "activity update fail");
+                //Log.d("ActivityUpdate", "activity update fail");
             }
         });
     }
@@ -121,12 +147,12 @@ public class DetectedActivityService extends Service {
         task.addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Log.d("ActivityUpdate", "activity update removal success");
+                //Log.d("ActivityUpdate", "activity update removal success");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.d("ActivityUpdate", "activity update removal fail");
+                //Log.d("ActivityUpdate", "activity update removal fail");
             }
         });
     }
@@ -136,6 +162,6 @@ public class DetectedActivityService extends Service {
         super.onDestroy();
         removeActivityTransitionUpdates();
         NotificationManagerCompat.from(this).cancel(DETECTED_ACTIVITY_NOTIFICATION_ID);
-        Toast.makeText(getApplicationContext(), "DetectedActivityService destroyed", Toast.LENGTH_LONG).show();
+        //Toast.makeText(getApplicationContext(), "DetectedActivityService destroyed", Toast.LENGTH_LONG).show();
     }
 }

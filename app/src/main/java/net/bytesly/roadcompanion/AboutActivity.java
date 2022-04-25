@@ -6,6 +6,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.webkit.WebView;
 
+import net.bytesly.roadcompanion.util.LocaleUtils;
+
 public class AboutActivity extends LocalizedActivity {
 
     WebView webViewAboutApp;
@@ -20,11 +22,13 @@ public class AboutActivity extends LocalizedActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        String langCode = LocaleUtils.getPrefLangCode(this);
+
         webViewAboutApp = findViewById(R.id.webViewAboutApp);
 
         webViewAboutApp.getSettings().setAllowUniversalAccessFromFileURLs(true);
 
-        webViewAboutApp.loadUrl("file:///android_asset/about/about.html");
+        webViewAboutApp.loadUrl(String.format("file:///android_asset/about/about_%s.html", langCode));
 
         webViewAboutApp.setBackgroundColor(Color.TRANSPARENT);
     }

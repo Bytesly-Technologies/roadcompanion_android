@@ -1,7 +1,7 @@
 package net.bytesly.roadcompanion;
 
 import static net.bytesly.roadcompanion.util.MyUtils.SUPPORTED_ACTIVITY_KEY;
-import static net.bytesly.roadcompanion.util.MyUtils.isPackageInstalled;
+import static net.bytesly.roadcompanion.util.MyUtils.isServiceRunning;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
-import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -29,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import net.bytesly.roadcompanion.adapter.ParkingCodesAdapter;
+import net.bytesly.roadcompanion.detectedactivity.DetectedActivityReceiver;
 import net.bytesly.roadcompanion.detectedactivity.DetectedActivityService;
 import net.bytesly.roadcompanion.util.MyUtils;
 
@@ -68,6 +68,8 @@ public class MainActivity extends LocalizedActivity {
             if(action.equals("openParkingApp")) {
                 stopService(new Intent(MainActivity.this, DetectedActivityService.class));
                 setTrackingStarted(false);
+                DetectedActivityService.cancelAlarmElapsed();
+                DetectedActivityReceiver.stopAllAdditionalReminders();
                 openParkingApp();
             }
         }
@@ -77,11 +79,6 @@ public class MainActivity extends LocalizedActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        if(!isPackageInstalled(MyUtils.TB_PARKING_PACKAGE_NAME, getPackageManager())) {
-            Toast.makeText(this, "პირველ რიგში დააყენეთ Tbilisi Parking", Toast.LENGTH_SHORT).show();
-            goToTbilisiParkingInstallPage();
-        }
 
         buttonOpenParking = findViewById(R.id.buttonOpenParking);
         buttonAddCode = findViewById(R.id.buttonAddParkingCode);
@@ -106,7 +103,7 @@ public class MainActivity extends LocalizedActivity {
 
         updateCodeRecycler(codeList);
 
-        if(isServiceRunning()) {
+        if(isServiceRunning(this)) {
             setTrackingStarted(true);
         }
 
@@ -123,15 +120,13 @@ public class MainActivity extends LocalizedActivity {
                 if(isTrackingStarted) {
                     stopService(new Intent(MainActivity.this, DetectedActivityService.class));
                     setTrackingStarted(false);
+                    DetectedActivityService.cancelAlarmElapsed();
+                    DetectedActivityReceiver.stopAllAdditionalReminders();
                 }
                 else {
                     if (isTrackingPermissionGranted()) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            startForegroundService(new Intent(MainActivity.this, DetectedActivityService.class));
-                        }
-                        else {
-                            startService(new Intent(MainActivity.this, DetectedActivityService.class));
-                        }
+                        startForegroundService(new Intent(MainActivity.this, DetectedActivityService.class));
+                        DetectedActivityService.scheduleRepeatingElapsedNotification(getApplicationContext());
                         setTrackingStarted(true);
                     } else {
                         requestPermissions(new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
@@ -148,6 +143,8 @@ public class MainActivity extends LocalizedActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        boolean curSoundStatus = AppController.getInstance().getNotificationSoundStatus();
+        menu.getItem(0).setTitle(curSoundStatus ? getString(R.string.menuitem_sound_on) : getString(R.string.menuitem_sound_off));
         return true;
     }
 
@@ -155,16 +152,22 @@ public class MainActivity extends LocalizedActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.main_menu_settings_item:
-//                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
-//                startActivity(settingsIntent);
+                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 return true;
             case R.id.main_menu_managesubscriptions_item:
-                Intent settingsIntent = new Intent(MainActivity.this, ManagePaymentActivity.class);
-                startActivity(settingsIntent);
+                Intent manageSubscriptionsIntent = new Intent(MainActivity.this, ManagePaymentActivity.class);
+                startActivity(manageSubscriptionsIntent);
                 return true;
             case R.id.main_menu_about_item:
                 Intent aboutIntent = new Intent(MainActivity.this, AboutActivity.class);
                 startActivity(aboutIntent);
+                return true;
+            case R.id.main_menu_soundtoggle_item:
+                boolean curSoundStatus = AppController.getInstance().getNotificationSoundStatus();
+                AppController.getInstance().setNotificationSoundStatus(!curSoundStatus);
+                item.setTitle(!curSoundStatus ? getString(R.string.menuitem_sound_on) : getString(R.string.menuitem_sound_off));
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -181,7 +184,7 @@ public class MainActivity extends LocalizedActivity {
                 startActivity(intent);
             }
             else {
-                Toast.makeText(MainActivity.this, "Tbilisi Parking აპლიკაციის გახსნა ვერ მოხერხდა", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.couldnt_open_tbilisiparking, Toast.LENGTH_SHORT).show();
             }
         }
         else {
@@ -191,6 +194,7 @@ public class MainActivity extends LocalizedActivity {
     }
 
     private void goToTbilisiParkingInstallPage() {
+        Toast.makeText(this, R.string.please_install_tbilisiparking_toast, Toast.LENGTH_SHORT).show();
         try {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + MyUtils.TB_PARKING_PACKAGE_NAME)));
         } catch (android.content.ActivityNotFoundException anfe) {
@@ -301,16 +305,6 @@ public class MainActivity extends LocalizedActivity {
         ) == PackageManager.PERMISSION_GRANTED;
     }
 
-    private boolean isServiceRunning() {
-        ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
-            if("net.bytesly.roadcompanion.detectedactivity.DetectedActivityService".equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -319,12 +313,8 @@ public class MainActivity extends LocalizedActivity {
                 grantResults.length > 0 &&
                 grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(new Intent(this, DetectedActivityService.class));
-            }
-            else {
-                startService(new Intent(this, DetectedActivityService.class));
-            }
+            startForegroundService(new Intent(this, DetectedActivityService.class));
+            DetectedActivityService.scheduleRepeatingElapsedNotification(getApplicationContext());
             setTrackingStarted(true);
             askOpenParking();
         }

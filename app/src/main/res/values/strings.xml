@@ -8,10 +8,10 @@
     <string name="cancel_btn">გაუქმება</string>
     <string name="invalid_code_toast">ლოტი არასწორია</string>
     <string name="success">წარმატება!</string>
-    <string name="parking_status_header">პარკირების მდგომარეობა:</string>
+    <string name="parking_status_header">პარკირების სტატუსი:</string>
     <string name="parking_status_disabled">გამორთული</string>
     <string name="start_button">ჩართვა</string>
-    <string name="add_code_button">დაამატე ლოტი</string>
+    <string name="add_code_button">დაამატეთ ლოტი</string>
     <string name="parking_status_enabled_text">ჩართულია</string>
     <string name="parking_status_disabled_text">გამორთულია</string>
     <string name="stop_button">გამორთვა</string>
@@ -29,7 +29,7 @@
     <string name="main_menu_settings">პარამეტრები</string>
     <string name="main_menu_about">აპის შესახებ</string>
     <string name="main_menu_managesubscriptions">გამოწერების მართვა</string>
-    <string name="error_prefix">"შეცდომა: "</string>
+    <string name="error_prefix">შეცდომა: </string>
     <string name="no_purchasable_skus_found">გაყიდვადი პროდუქტები ვერ მოიძებნა</string>
     <string name="inavlid_purchase">არასწორი შენაძენი</string>
     <string name="purchase_pending_toast">შენაძენი მოლოდინის მდგომარეობაშია, გთხოვთ დაამთავროთ ტრანზაქცია</string>
@@ -43,7 +43,19 @@
     <string name="change_plan">ტარიფის შეცვლა</string>
     <string name="subscription_will_be_updated_soon">გამოწერა მალე განახლდება</string>
     <string name="purchase_canceled_toast">ყიდვა გაჩერებულია</string>
-    <string name="free_trial_explanation">პირველი შენაძენის შემდეგ მოგეცემათ 7-დღიანი უფასო მოხმარების ვადა, რომლის შემდეგაც გადახვალთ ზემოთ აღწერილ ტარიფზე. მეტი ინფორმაციისთის ყურადღბა მიაქციეთ Google Play ყიდვის ფანჯარას.</string>
+    <string name="free_trial_explanation">პირველი შენაძენის შემდეგ მოგეცემათ 7-დღიანი უფასო მოხმარების ვადა, რომლის შემდეგაც გადახვალთ ზემოთ აღწერილ ტარიფზე. მეტი ინფორმაციისთის ყურადღება მიაქციეთ Google Play ყიდვის ფანჯარას.</string>
     <string name="error_while_checking_subscription_status">გამოწერის გადამოწმების დროს დაფიქსირდა შეცდომა</string>
     <string name="btn_tryagain">სცადეთ ხელახლა</string>
+    <string name="title_activity_settings">პარამეტრები</string>
+
+    <string name="settings_pleaserestart">გთხოვთ გადატვირთოთ აპლიკაცია</string>
+    <string name="settings_general_title">მთავარი</string>
+    <string name="settings_language_title">ენა</string>
+    <string name="settings_notiftimes_title">შეხსენებების რაოდენობა</string>
+    <string name="fifteenmin_notification_text">ხომ არ დაგრჩათ Tbilisi Parking-ში წამზომი ჩართული?</string>
+    <string name="main_menu_sound">ხმა</string>
+    <string name="menuitem_sound_on">ხმა: ჩართულია</string>
+    <string name="menuitem_sound_off">ხმა: გამორთულია</string>
+    <string name="please_install_tbilisiparking_toast">პირველ რიგში დააყენეთ Tbilisi Parking</string>
+    <string name="couldnt_open_tbilisiparking">Tbilisi Parking აპლიკაციის გახსნა ვერ მოხერხდა</string>
 </resources>

@@ -8,7 +8,7 @@
     android:background="@drawable/main_screen_bg">
 
     <LinearLayout
-        android:visibility="gone"
+        android:visibility="visible"
         android:id="@+id/linearLayoutCurrentStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -86,7 +86,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="visible"
+        android:visibility="gone"
         android:id="@+id/linearLayoutCheckingPayment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

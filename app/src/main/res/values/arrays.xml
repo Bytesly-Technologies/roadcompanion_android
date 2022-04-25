@@ -1,0 +1,11 @@
+<resources>
+    <string-array name="lang_names">
+        <item>ქართული</item>
+        <item>English</item>
+    </string-array>
+
+    <string-array name="lang_values">
+        <item>ka</item>
+        <item>en</item>
+    </string-array>
+</resources>

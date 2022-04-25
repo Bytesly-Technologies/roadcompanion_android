@@ -1,0 +1,25 @@
+<PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory app:title="@string/settings_general_title">
+
+        <ListPreference
+            app:entries="@array/lang_names"
+            app:entryValues="@array/lang_values"
+            app:key="lang_code"
+            app:title="@string/settings_language_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <SeekBarPreference
+            app:key="notif_times"
+            app:title="@string/settings_notiftimes_title"
+            app:useSimpleSummaryProvider="false"
+            app:showSeekBarValue="true"
+            app:min="1"
+            android:max="5"
+            app:defaultValue="1"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

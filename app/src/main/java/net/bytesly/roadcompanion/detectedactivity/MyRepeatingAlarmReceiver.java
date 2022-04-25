@@ -1,7 +1,7 @@
 package net.bytesly.roadcompanion.detectedactivity;
 
 import static net.bytesly.roadcompanion.util.MyUtils.DETECTED_ACTIVITY_CHANNEL_ID;
-import static net.bytesly.roadcompanion.util.MyUtils.DETECTED_PENDING_INTENT_REQUEST_CODE;
+import static net.bytesly.roadcompanion.util.MyUtils.REPEATINGALARM_PENDING_INTENT_REQUEST_CODE;
 import static net.bytesly.roadcompanion.util.MyUtils.SUPPORTED_ACTIVITY_KEY;
 
 import android.app.Notification;
@@ -16,15 +16,9 @@ import android.content.res.Resources;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
-import com.google.android.gms.location.ActivityTransition;
-import com.google.android.gms.location.ActivityTransitionEvent;
-import com.google.android.gms.location.ActivityTransitionResult;
-import com.google.android.gms.location.DetectedActivity;
 
 import net.bytesly.roadcompanion.AppController;
 import net.bytesly.roadcompanion.MainActivity;
@@ -33,67 +27,21 @@ import net.bytesly.roadcompanion.util.LocaleUtils;
 import net.bytesly.roadcompanion.util.MyUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
-public class DetectedActivityReceiver extends BroadcastReceiver {
-
-    static int additionalReminderCount = 0;
-
-    static Runnable additionalReminderRunnable;
-
-    static Handler handler = new Handler();
-
-    public static PendingIntent getPendingIntent(Context context) {
-        Intent intent = new Intent(context, DetectedActivityReceiver.class);
-        return PendingIntent.getBroadcast(context, DETECTED_PENDING_INTENT_REQUEST_CODE, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-    }
+public class MyRepeatingAlarmReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (ActivityTransitionResult.hasResult(intent)) {
-            ActivityTransitionResult result = ActivityTransitionResult.extractResult(intent);
-
-            if(result != null) {
-                handleTransitionEvents(result.getTransitionEvents(), context);
-            }
-        }
+        showNotification(context);
+        DetectedActivityService.scheduleRepeatingElapsedNotification(context);
     }
 
-    private void handleTransitionEvents(List<ActivityTransitionEvent> transitionEvents, Context context) {
-        List<ActivityTransitionEvent> filteredEvents = new ArrayList<>();
-
-        for (ActivityTransitionEvent evt : transitionEvents) {
-            if((evt.getActivityType() == DetectedActivity.IN_VEHICLE)
-            && evt.getTransitionType() == ActivityTransition.ACTIVITY_TRANSITION_ENTER) {
-                filteredEvents.add(evt);
-               }
-        }
-
-        if(filteredEvents.size() > 0) {
-            showNotification(context);
-            additionalReminderCount = AppController.getInstance().getParkingNotificationTimes() - 1;
-            additionalReminderRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    if(MyUtils.isServiceRunning(context)) {
-                        showNotification(context);
-                        additionalReminderCount--;
-                        if(additionalReminderCount > 0) {
-                            handler.postDelayed(additionalReminderRunnable, MyUtils.ADDITIONAL_REMINDERS_INTERVAL_MILLIS);
-                        }
-                    }
-                }
-            };
-
-            if(additionalReminderCount > 0) {
-                handler.postDelayed(additionalReminderRunnable, MyUtils.ADDITIONAL_REMINDERS_INTERVAL_MILLIS);
-            }
-        }
+    public static PendingIntent getPendingIntent(Context context) {
+        Intent intent = new Intent(context, MyRepeatingAlarmReceiver.class);
+        return PendingIntent.getBroadcast(context, REPEATINGALARM_PENDING_INTENT_REQUEST_CODE, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
-
 
     private void showNotification(Context context) {
         createNotificationChannel(context);
@@ -109,7 +57,7 @@ public class DetectedActivityReceiver extends BroadcastReceiver {
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle(
                         localizedResources.getString(R.string.reminder_notification_title))
-                .setContentText(localizedResources.getString(R.string.reminder_notification_text))
+                .setContentText(localizedResources.getString(R.string.fifteenmin_notification_text))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setOnlyAlertOnce(false)
                 .setContentIntent(pendingIntent)
@@ -120,7 +68,7 @@ public class DetectedActivityReceiver extends BroadcastReceiver {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
 
         // notificationId is a unique int for each notification that you must define
-        notificationManager.notify(MyUtils.DETECTED_ACTIVITY_NOTIFICATION_ID, builder.build());
+        notificationManager.notify(MyUtils.REPEATING_NOTIFICATION_ID, builder.build());
 
         if(AppController.getInstance().getNotificationSoundStatus()) {
             Uri NOTIFICATION_SOUND = Uri.parse(
@@ -133,10 +81,6 @@ public class DetectedActivityReceiver extends BroadcastReceiver {
 
             RingtoneManager.getRingtone(context, NOTIFICATION_SOUND).play();
         }
-    }
-
-    public static void stopAllAdditionalReminders() {
-        handler.removeCallbacks(additionalReminderRunnable);
     }
 
     private void createNotificationChannel(Context context) {
@@ -162,5 +106,4 @@ public class DetectedActivityReceiver extends BroadcastReceiver {
             notificationManager.createNotificationChannel(channel);
         }
     }
-
 }

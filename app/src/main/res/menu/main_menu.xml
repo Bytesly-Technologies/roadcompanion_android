@@ -3,9 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/main_menu_soundtoggle_item"
+        android:title="@string/main_menu_sound"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/main_menu_settings_item"
         android:title="@string/main_menu_settings"
-        android:enabled="false"
         app:showAsAction="never" />
     <item
         android:id="@+id/main_menu_managesubscriptions_item"

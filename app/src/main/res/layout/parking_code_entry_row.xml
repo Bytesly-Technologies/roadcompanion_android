@@ -5,7 +5,6 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/parkingcode_entry_row"
     android:background="@drawable/parkingcode_row_roundedbg"
     android:paddingHorizontal="10dp"
     android:paddingVertical="6dp"
