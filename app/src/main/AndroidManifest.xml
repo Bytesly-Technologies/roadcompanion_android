@@ -10,7 +10,7 @@
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="com.android.vending.BILLING" />
+<!--    <uses-permission android:name="com.android.vending.BILLING" />-->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -31,15 +31,6 @@
             android:value="net.bytesly.roadcompanion.MainActivity" />
         </activity>
         <activity
-            android:name=".ManagePaymentActivity"
-            android:exported="false"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="net.bytesly.roadcompanion.MainActivity" />
-        </activity>
-
-        <activity
             android:name=".AboutActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity">
@@ -47,9 +38,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="net.bytesly.roadcompanion.MainActivity" />
         </activity>
-        <activity
-            android:name=".PaymentGatewayActivity"
-            android:exported="false" />
         <activity
             android:name=".MyAppIntroActivity"
             android:exported="true"
