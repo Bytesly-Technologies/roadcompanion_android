@@ -8,6 +8,9 @@ import android.content.pm.PackageManager;
 
 import net.bytesly.roadcompanion.R;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class MyUtils {
     public static final String KEY_IS_TRACKING_STARTED = "is_tracking_started";
 
@@ -67,6 +70,41 @@ public class MyUtils {
             }
         }
         return false;
+    }
+
+    public static final ArrayList<String> subscribeItemIDs = new ArrayList<String>() {{
+        add("useapp_3m");
+        add("useapp_6m");
+        add("useapp_1y");
+    }};
+
+    public static String billingResponseCodeAsString(int code) {
+        switch(code) {
+            case -3: return "SERVICE_TIMEOUT";
+            case -2: return "FEATURE_NOT_SUPPORTED";
+            case -1: return "SERVICE_DISCONNECTED";
+            case 0: return "OK";
+            case 1: return "USER_CANCELED";
+            case 2: return "SERVICE_UNAVAILABLE";
+            case 3: return "BILLING_UNAVAILABLE";
+            case 4: return "ITEM_UNAVAILABLE";
+            case 5: return "DEVELOPER_ERROR";
+            case 6: return "ERROR";
+            case 7: return "ITEM_ALREADY_OWNED";
+            case 8: return "ITEM_NOT_OWNED";
+        }
+        return "UNKNOWN";
+    }
+
+    public static boolean verifyValidSignature(String signedData, String signature, Context ctx) {
+        try {
+            // To get key go to Developer Console > Select your app > Development Tools > Services & APIs.
+            String base64Key = ctx.getResources().getString(R.string.google_billing_licensekey);
+
+            return Security.verifyPurchase(base64Key, signedData, signature);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
 }

@@ -22,7 +22,7 @@ public class MyAppIntroActivity extends LocalizedActivity {
     }
 
     private void startPaymentCheckActivity() {
-        Intent intent = new Intent(MyAppIntroActivity.this, PaymentGatewayActivity.class);
+        Intent intent = new Intent(MyAppIntroActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
     }

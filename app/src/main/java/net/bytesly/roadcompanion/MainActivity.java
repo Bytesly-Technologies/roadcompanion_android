@@ -4,6 +4,7 @@ import static net.bytesly.roadcompanion.util.MyUtils.SUPPORTED_ACTIVITY_KEY;
 import static net.bytesly.roadcompanion.util.MyUtils.isServiceRunning;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,6 +28,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.AcknowledgePurchaseResponseListener;
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesResponseListener;
+import com.android.billingclient.api.PurchasesUpdatedListener;
+
 import net.bytesly.roadcompanion.adapter.ParkingCodesAdapter;
 import net.bytesly.roadcompanion.detectedactivity.DetectedActivityReceiver;
 import net.bytesly.roadcompanion.detectedactivity.DetectedActivityService;
@@ -37,9 +47,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MainActivity extends LocalizedActivity {
+public class MainActivity extends LocalizedActivity implements PurchasesUpdatedListener {
 
-    Button buttonOpenParking;
+    Button buttonStartStopTracking;
     Button buttonAddCode;
 
     ArrayList<String> codeList;
@@ -56,16 +66,18 @@ public class MainActivity extends LocalizedActivity {
     public void setTrackingStarted(boolean trackingStarted) {
         isTrackingStarted = trackingStarted;
         linearLayoutParkingStatus.setActivated(trackingStarted);
-        textViewParkingStatus.setText(trackingStarted ? getString(R.string.parking_status_enabled_text): getString(R.string.parking_status_disabled_text));
-        buttonOpenParking.setText(trackingStarted ? R.string.stop_button: R.string.start_button);
+        textViewParkingStatus.setText(trackingStarted ? getString(R.string.parking_status_enabled_text) : getString(R.string.parking_status_disabled_text));
+        buttonStartStopTracking.setText(trackingStarted ? R.string.stop_button : R.string.start_button);
     }
+
+    private BillingClient billingClient;
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         if (intent.hasExtra(SUPPORTED_ACTIVITY_KEY)) {
             String action = intent.getStringExtra(SUPPORTED_ACTIVITY_KEY);
-            if(action.equals("openParkingApp")) {
+            if (action.equals("openParkingApp")) {
                 stopService(new Intent(MainActivity.this, DetectedActivityService.class));
                 setTrackingStarted(false);
                 DetectedActivityService.cancelAlarmElapsed();
@@ -80,7 +92,7 @@ public class MainActivity extends LocalizedActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        buttonOpenParking = findViewById(R.id.buttonOpenParking);
+        buttonStartStopTracking = findViewById(R.id.buttonOpenParking);
         buttonAddCode = findViewById(R.id.buttonAddParkingCode);
 
         codeList = new ArrayList<>(AppController.getInstance().getSavedParkingCodeList());
@@ -95,7 +107,7 @@ public class MainActivity extends LocalizedActivity {
         recyclerViewAdapter = new ParkingCodesAdapter(this, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String currentCode = codeList.get(recyclerViewParkingCodes.getChildAdapterPosition((View)v.getParent()));
+                String currentCode = codeList.get(recyclerViewParkingCodes.getChildAdapterPosition((View) v.getParent()));
                 deleteParkingCode(currentCode);
             }
         });
@@ -103,7 +115,7 @@ public class MainActivity extends LocalizedActivity {
 
         updateCodeRecycler(codeList);
 
-        if(isServiceRunning(this)) {
+        if (isServiceRunning(this)) {
             setTrackingStarted(true);
         }
 
@@ -114,29 +126,227 @@ public class MainActivity extends LocalizedActivity {
             }
         });
 
-        buttonOpenParking.setOnClickListener(new View.OnClickListener() {
+        buttonStartStopTracking.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(isTrackingStarted) {
+                if (isTrackingStarted) {
                     stopService(new Intent(MainActivity.this, DetectedActivityService.class));
                     setTrackingStarted(false);
                     DetectedActivityService.cancelAlarmElapsed();
                     DetectedActivityReceiver.stopAllAdditionalReminders();
+                    askOpenParking();
+                } else {
+                    checkSubscription();
                 }
-                else {
-                    if (isTrackingPermissionGranted()) {
-                        startForegroundService(new Intent(MainActivity.this, DetectedActivityService.class));
-                        DetectedActivityService.scheduleRepeatingElapsedNotification(getApplicationContext());
-                        setTrackingStarted(true);
-                    } else {
-                        requestPermissions(new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
-                                MyUtils.TRACKING_PERMISSION_CODE);
-                        return;
-                    }
-                }
-                askOpenParking();
             }
         });
+
+        //billing
+        billingClient = BillingClient.newBuilder(this)
+                .enablePendingPurchases().setListener(this).build();
+        //end billing
+    }
+
+    private void checkSubscription() {
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
+
+                BillingResult subscriptionsSupportedResult = billingClient.isFeatureSupported(BillingClient.FeatureType.SUBSCRIPTIONS);
+                BillingResult subscriptionUpdateSupportedResult = billingClient.isFeatureSupported(BillingClient.FeatureType.SUBSCRIPTIONS_UPDATE);
+
+                if (subscriptionsSupportedResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, subscriptionsSupportedResult.getDebugMessage()
+                                    + MyUtils.billingResponseCodeAsString(subscriptionsSupportedResult.getResponseCode()), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    return;
+                }
+                if (subscriptionUpdateSupportedResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this, subscriptionUpdateSupportedResult.getDebugMessage()
+                                    + MyUtils.billingResponseCodeAsString(subscriptionUpdateSupportedResult.getResponseCode()), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    return;
+                }
+
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    billingClient.queryPurchasesAsync(BillingClient.SkuType.SUBS, new PurchasesResponseListener() {
+                        @Override
+                        public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> queryPurchases) {
+                            if (queryPurchases != null && queryPurchases.size() > 0) {
+                                handlePurchases(queryPurchases);
+                            }
+
+                            //check which items are in purchase list and which are not in purchase list
+                            //if items that are found add them to purchaseFound
+                            //indexOf return index of item in purchase list from 0-2 (because we have 3 items) else returns -1 if not found
+                            ArrayList<Integer> purchaseFound = new ArrayList<>();
+                            if (queryPurchases != null && queryPurchases.size() > 0) {
+                                //check item in purchase list
+                                for (Purchase p : queryPurchases) {
+                                    int index = MyUtils.subscribeItemIDs.indexOf(p.getSkus().get(0));
+                                    //if purchase found
+                                    if (index > -1 && p.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                                        purchaseFound.add(index);
+                                    }
+                                }
+                            }
+
+                            if (purchaseFound.size() > 0) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //Toast.makeText(PaymentGatewayActivity.this, "purchase found, go to main",Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                                turnOnParkingInOurApp();
+                            } else {
+                                showPaymentScreen();
+                            }
+                        }
+                    });
+                }
+                else {
+                    showPaymentScreen();
+                }
+            }
+
+            @Override
+            public void onBillingServiceDisconnected() {
+
+            }
+        });
+    }
+
+    private void turnOnParkingInOurApp() {
+        if (isTrackingPermissionGranted()) {
+            startForegroundService(new Intent(MainActivity.this, DetectedActivityService.class));
+            DetectedActivityService.scheduleRepeatingElapsedNotification(getApplicationContext());
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setTrackingStarted(true);
+                    askOpenParking();
+                }
+            });
+
+        } else {
+            requestPermissions(new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
+                    MyUtils.TRACKING_PERMISSION_CODE);
+        }
+    }
+
+    private void handlePurchases(List<Purchase> purchases) {
+        for (Purchase purchase : purchases) {
+            final int index = MyUtils.subscribeItemIDs.indexOf(purchase.getSkus().get(0));
+            //purchase found
+            if (index > -1) {
+                //if item is purchased
+                if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                    if (!MyUtils.verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature(), MainActivity.this)) {
+                        // Invalid purchase
+                        // show error to user
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(MainActivity.this, getString(R.string.error_prefix) + getString(R.string.inavlid_purchase), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        showPaymentScreen();
+                    }
+                    // else purchase is valid
+                    //if item is purchased/subscribed and not Acknowledged
+                    else if (!purchase.isAcknowledged()) {
+                        AcknowledgePurchaseParams acknowledgePurchaseParams =
+                                AcknowledgePurchaseParams.newBuilder()
+                                        .setPurchaseToken(purchase.getPurchaseToken())
+                                        .build();
+
+                        billingClient.acknowledgePurchase(acknowledgePurchaseParams,
+                                new AcknowledgePurchaseResponseListener() {
+                                    @Override
+                                    public void onAcknowledgePurchaseResponse(BillingResult billingResult) {
+                                        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+
+                                        } else {
+                                            showPaymentScreen();
+                                        }
+                                    }
+                                });
+
+                    }
+                    //else item is purchased and also acknowledged
+                    else {
+
+                    }
+                }
+                //if purchase is pending
+                else if (purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this,
+                                    MyUtils.subscribeItemIDs.get(index) + getString(R.string.purchase_pending_toast), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    showPaymentScreen();
+                }
+                //if purchase is refunded or unknown
+                else if (purchase.getPurchaseState() == Purchase.PurchaseState.UNSPECIFIED_STATE) {
+                    showPaymentScreen();
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> purchases) {
+        //if item newly purchased
+        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
+
+            for (Purchase purchase : purchases) {
+                final int index = MyUtils.subscribeItemIDs.indexOf(purchase.getSkus().get(0));
+                //purchase found
+                if (index > -1) {
+                    //if item is purchased
+                    if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                        if (MyUtils.verifyValidSignature(purchase.getOriginalJson(),
+                                purchase.getSignature(), MainActivity.this) &&
+                                !purchase.isAcknowledged()) {
+                            AcknowledgePurchaseParams acknowledgePurchaseParams =
+                                    AcknowledgePurchaseParams.newBuilder()
+                                            .setPurchaseToken(purchase.getPurchaseToken())
+                                            .build();
+
+                            billingClient.acknowledgePurchase(acknowledgePurchaseParams,
+                                    new AcknowledgePurchaseResponseListener() {
+                                        @Override
+                                        public void onAcknowledgePurchaseResponse(@NonNull BillingResult billingResult) {
+
+                                        }
+                                    });
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void showPaymentScreen() {
+        Intent intent = new Intent(MainActivity.this, PaymentGatewayActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     @Override
@@ -178,16 +388,14 @@ public class MainActivity extends LocalizedActivity {
     private void openParkingApp() {
 
         PackageManager pm = getPackageManager();
-        if(MyUtils.isPackageInstalled(MyUtils.TB_PARKING_PACKAGE_NAME, pm)) {
+        if (MyUtils.isPackageInstalled(MyUtils.TB_PARKING_PACKAGE_NAME, pm)) {
             Intent intent = pm.getLaunchIntentForPackage(MyUtils.TB_PARKING_PACKAGE_NAME);
             if (intent != null) {
                 startActivity(intent);
-            }
-            else {
+            } else {
                 Toast.makeText(MainActivity.this, R.string.couldnt_open_tbilisiparking, Toast.LENGTH_SHORT).show();
             }
-        }
-        else {
+        } else {
             goToTbilisiParkingInstallPage();
         }
 
@@ -216,7 +424,7 @@ public class MainActivity extends LocalizedActivity {
 
         String alertMessage = String.format(
                 getString(R.string.ask_parking_message),
-        isTrackingStarted ? getString(R.string.tracking_status_started) : getString(R.string.tracking_status_stopped));
+                isTrackingStarted ? getString(R.string.tracking_status_started) : getString(R.string.tracking_status_stopped));
 
         builder.setMessage(alertMessage);
         builder.create().show();
@@ -266,10 +474,9 @@ public class MainActivity extends LocalizedActivity {
             @Override
             public void onClick(View v) {
                 String newNumberStr = newCodeEditText.getText().toString();
-                if(newNumberStr.isEmpty()) {
+                if (newNumberStr.isEmpty()) {
                     Toast.makeText(MainActivity.this, R.string.invalid_code_toast, Toast.LENGTH_SHORT).show();
-                }
-                else {
+                } else {
                     Set<String> codeSet = new HashSet<>(AppController.getInstance().getSavedParkingCodeList());
                     codeSet.add(newNumberStr);
                     codeList = new ArrayList<>(codeSet);
@@ -285,11 +492,10 @@ public class MainActivity extends LocalizedActivity {
     private void updateCodeRecycler(List<String> codeList) {
         recyclerViewAdapter.setCodeList(codeList);
 
-        if(codeList.size() == 0) {
+        if (codeList.size() == 0) {
             recyclerViewParkingCodes.setVisibility(View.GONE);
             noCodesAddedLayout.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             recyclerViewParkingCodes.setVisibility(View.VISIBLE);
             noCodesAddedLayout.setVisibility(View.GONE);
         }
@@ -310,13 +516,24 @@ public class MainActivity extends LocalizedActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == MyUtils.TRACKING_PERMISSION_CODE &&
-                grantResults.length > 0 &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                grantResults.length > 0) {
 
-            startForegroundService(new Intent(this, DetectedActivityService.class));
-            DetectedActivityService.scheduleRepeatingElapsedNotification(getApplicationContext());
-            setTrackingStarted(true);
-            askOpenParking();
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startForegroundService(new Intent(this, DetectedActivityService.class));
+                DetectedActivityService.scheduleRepeatingElapsedNotification(getApplicationContext());
+                setTrackingStarted(true);
+                askOpenParking();
+            } else {
+
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (billingClient != null) {
+            billingClient.endConnection();
         }
     }
 }

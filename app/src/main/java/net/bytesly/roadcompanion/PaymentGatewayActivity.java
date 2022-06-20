@@ -26,9 +26,7 @@ import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 
 import net.bytesly.roadcompanion.util.MyUtils;
-import net.bytesly.roadcompanion.util.Security;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,16 +49,10 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
 
     private BillingClient billingClient;
 
-    private static ArrayList<String> subscribeItemIDs = new ArrayList<String>() {{
-        add("useapp_3m");
-        add("useapp_6m");
-        add("useapp_1y");
-    }};
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_unpaid);
+        setContentView(R.layout.activity_payment_gateway);
 
         buttonSubscribe3M = findViewById(R.id.buttonSubscribe3M);
         buttonSubscribe6M = findViewById(R.id.buttonSubscribe6M);
@@ -87,12 +79,12 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
 
                 if(subscriptionsSupportedResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                     showErrorLayout(subscriptionsSupportedResult.getDebugMessage()
-                    + billingResponseCodeAsString(subscriptionsSupportedResult.getResponseCode()));
+                    + MyUtils.billingResponseCodeAsString(subscriptionsSupportedResult.getResponseCode()));
                     return;
                 }
                 if(subscriptionUpdateSupportedResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                     showErrorLayout(subscriptionUpdateSupportedResult.getDebugMessage()
-                    + billingResponseCodeAsString(subscriptionUpdateSupportedResult.getResponseCode()));
+                    + MyUtils.billingResponseCodeAsString(subscriptionUpdateSupportedResult.getResponseCode()));
                     return;
                 }
 
@@ -101,7 +93,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                 }
                 else {
                     showErrorLayout(billingResult.getDebugMessage()
-                    + billingResponseCodeAsString(billingResult.getResponseCode()));
+                    + MyUtils.billingResponseCodeAsString(billingResult.getResponseCode()));
                 }
             }
 
@@ -129,7 +121,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                 if(queryPurchases!=null && queryPurchases.size()>0){
                     //check item in purchase list
                     for(Purchase p:queryPurchases){
-                        int index= subscribeItemIDs.indexOf(p.getSkus().get(0));
+                        int index= MyUtils.subscribeItemIDs.indexOf(p.getSkus().get(0));
                         //if purchase found
                         if(index>-1 && p.getPurchaseState() == Purchase.PurchaseState.PURCHASED)
                         {
@@ -178,7 +170,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                             @Override
                             public void run() {
                                 Toast.makeText(PaymentGatewayActivity.this,getString(R.string.error_prefix)
-                                        +billingResult.getDebugMessage() + billingResponseCodeAsString(billingResult.getResponseCode()),Toast.LENGTH_SHORT).show();
+                                        +billingResult.getDebugMessage() + MyUtils.billingResponseCodeAsString(billingResult.getResponseCode()),Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -234,7 +226,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
 
     private void showPaymentScreen() {
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
-        params.setSkusList(subscribeItemIDs).setType(BillingClient.SkuType.SUBS);
+        params.setSkusList(MyUtils.subscribeItemIDs).setType(BillingClient.SkuType.SUBS);
 
         billingClient.querySkuDetailsAsync(params.build(),
                 new SkuDetailsResponseListener() {
@@ -270,7 +262,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                                 }
                                 else {
                                     showErrorLayout(billingResult.getDebugMessage()
-                                    + billingResponseCodeAsString(billingResult.getResponseCode()));
+                                    + MyUtils.billingResponseCodeAsString(billingResult.getResponseCode()));
                                 }
                             }
                         });
@@ -282,24 +274,6 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(MyUtils.PLAY_STORE_SUBSCRIPTION_URL));
         startActivity(intent);
-    }
-
-    private String billingResponseCodeAsString(int code) {
-        switch(code) {
-            case -3: return "SERVICE_TIMEOUT";
-            case -2: return "FEATURE_NOT_SUPPORTED";
-            case -1: return "SERVICE_DISCONNECTED";
-            case 0: return "OK";
-            case 1: return "USER_CANCELED";
-            case 2: return "SERVICE_UNAVAILABLE";
-            case 3: return "BILLING_UNAVAILABLE";
-            case 4: return "ITEM_UNAVAILABLE";
-            case 5: return "DEVELOPER_ERROR";
-            case 6: return "ERROR";
-            case 7: return "ITEM_ALREADY_OWNED";
-            case 8: return "ITEM_NOT_OWNED";
-        }
-        return "UNKNOWN";
     }
 
     private void showErrorLayout(String debugMessage) {
@@ -336,9 +310,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
             billingClient.queryPurchasesAsync(BillingClient.SkuType.SUBS, new PurchasesResponseListener() {
                 @Override
                 public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> alreadyPurchases) {
-                    if(alreadyPurchases!=null){
-                        handlePurchases(alreadyPurchases);
-                    }
+                    handlePurchases(alreadyPurchases);
                 }
             });
         }
@@ -358,32 +330,22 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                 @Override
                 public void run() {
                     Toast.makeText(PaymentGatewayActivity.this,getString(R.string.error_prefix)+
-                    billingResult.getDebugMessage() + billingResponseCodeAsString(billingResult.getResponseCode()),Toast.LENGTH_SHORT).show();
+                    billingResult.getDebugMessage() + MyUtils.billingResponseCodeAsString(billingResult.getResponseCode()),Toast.LENGTH_SHORT).show();
                 }
             });
         }
     }
 
-    private boolean verifyValidSignature(String signedData, String signature) {
-        try {
-            // To get key go to Developer Console > Select your app > Development Tools > Services & APIs.
-            String base64Key = getResources().getString(R.string.google_billing_licensekey);
-
-            return Security.verifyPurchase(base64Key, signedData, signature);
-        } catch (IOException e) {
-            return false;
-        }
-    }
 
     void handlePurchases(List<Purchase> purchases) {
         for(Purchase purchase:purchases) {
-            final int index= subscribeItemIDs.indexOf(purchase.getSkus().get(0));
+            final int index= MyUtils.subscribeItemIDs.indexOf(purchase.getSkus().get(0));
             //purchase found
             if(index>-1) {
                 //if item is purchased
                 if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED)
                 {
-                    if (!verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature())) {
+                    if (!MyUtils.verifyValidSignature(purchase.getOriginalJson(), purchase.getSignature(), PaymentGatewayActivity.this)) {
                         // Invalid purchase
                         // show error to user
 
@@ -413,7 +375,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                                             runOnUiThread(new Runnable() {
                                                 @Override
                                                 public void run() {
-                                                    Toast.makeText(PaymentGatewayActivity.this, "purchase ACK, go to main",Toast.LENGTH_SHORT).show();
+                                                    //Toast.makeText(PaymentGatewayActivity.this, "purchase ACK, go to main",Toast.LENGTH_SHORT).show();
                                                 }
                                             });
                                             initMainScreen();
@@ -431,7 +393,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(PaymentGatewayActivity.this, "Entitled, go to main",Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(PaymentGatewayActivity.this, "Entitled, go to main",Toast.LENGTH_SHORT).show();
                             }
                         });
                         initMainScreen();
@@ -444,7 +406,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                         @Override
                         public void run() {
                             Toast.makeText(PaymentGatewayActivity.this,
-                                    subscribeItemIDs.get(index)+getString(R.string.purchase_pending_toast), Toast.LENGTH_SHORT).show();
+                                    MyUtils.subscribeItemIDs.get(index)+getString(R.string.purchase_pending_toast), Toast.LENGTH_SHORT).show();
                         }
                     });
 
@@ -480,7 +442,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                             @Override
                             public void run() {
                                 Toast.makeText(PaymentGatewayActivity.this,getString(R.string.error_prefix)
-                                +billingResult.getDebugMessage() + billingResponseCodeAsString(billingResult.getResponseCode()),Toast.LENGTH_SHORT).show();
+                                +billingResult.getDebugMessage() + MyUtils.billingResponseCodeAsString(billingResult.getResponseCode()),Toast.LENGTH_SHORT).show();
                             }
                         });
 
@@ -532,7 +494,7 @@ public class PaymentGatewayActivity extends LocalizedActivity implements Purchas
                             @Override
                             public void run() {
                                 Toast.makeText(PaymentGatewayActivity.this,
-                                        getString(R.string.error_prefix) + billingResult.getDebugMessage() + billingResponseCodeAsString(billingResult.getResponseCode()), Toast.LENGTH_SHORT).show();
+                                        getString(R.string.error_prefix) + billingResult.getDebugMessage() + MyUtils.billingResponseCodeAsString(billingResult.getResponseCode()), Toast.LENGTH_SHORT).show();
                             }
                         });
                     }

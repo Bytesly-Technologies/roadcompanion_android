@@ -57,4 +57,5 @@
     <string name="menuitem_sound_off">Sound: off</string>
     <string name="please_install_tbilisiparking_toast">Please install Tbilisi Parking first</string>
     <string name="couldnt_open_tbilisiparking">Couldn\'t open Tbilisi Parking</string>
+    <string name="no_subscription_bought_yet">No subscription bought yet</string>
 </resources>

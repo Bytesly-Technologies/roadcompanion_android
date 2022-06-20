@@ -58,4 +58,5 @@
     <string name="menuitem_sound_off">ხმა: გამორთულია</string>
     <string name="please_install_tbilisiparking_toast">პირველ რიგში დააყენეთ Tbilisi Parking</string>
     <string name="couldnt_open_tbilisiparking">Tbilisi Parking აპლიკაციის გახსნა ვერ მოხერხდა</string>
+    <string name="no_subscription_bought_yet">გამოწერა ჯერ არაა ნაყიდი</string>
 </resources>
