@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.google.android.gms.ads.MobileAds;
+
 import net.bytesly.roadcompanion.util.LocaleUtils;
 import net.bytesly.roadcompanion.util.MyUtils;
 
@@ -15,6 +17,8 @@ public class AppController extends Application {
 
     private static AppController mInstance;
 
+    private static AppOpenManager appOpenManager;
+
     public boolean shouldShowIntroActivity = true;
 
     public String currentLang = "";
@@ -23,6 +27,10 @@ public class AppController extends Application {
     public void onCreate() {
         super.onCreate();
         mInstance = this;
+
+        MobileAds.initialize(this);
+
+        appOpenManager = new AppOpenManager(this);
 
         LocaleUtils.setPrefLangCode(this,"ka");
         LocaleUtils.setPrefCountryCode(this, MyUtils.getCountryCode("ka"));

@@ -62,6 +62,11 @@
 
         <receiver android:name=".detectedactivity.DetectedActivityReceiver" />
         <receiver android:name=".detectedactivity.MyRepeatingAlarmReceiver" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-2764486139832613~8705513961"/>
+
     </application>
 
 </manifest>

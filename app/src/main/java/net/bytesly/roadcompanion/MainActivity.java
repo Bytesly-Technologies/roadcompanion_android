@@ -4,7 +4,6 @@ import static net.bytesly.roadcompanion.util.MyUtils.SUPPORTED_ACTIVITY_KEY;
 import static net.bytesly.roadcompanion.util.MyUtils.isServiceRunning;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -27,6 +26,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
 
 import net.bytesly.roadcompanion.adapter.ParkingCodesAdapter;
 import net.bytesly.roadcompanion.detectedactivity.DetectedActivityReceiver;
@@ -53,6 +57,9 @@ public class MainActivity extends LocalizedActivity {
     ConstraintLayout noCodesAddedLayout;
 
     private boolean isTrackingStarted = false;
+
+    AdView bannerAdView;
+
 
     public void setTrackingStarted(boolean trackingStarted) {
         isTrackingStarted = trackingStarted;
@@ -107,6 +114,40 @@ public class MainActivity extends LocalizedActivity {
         if (isServiceRunning(this)) {
             setTrackingStarted(true);
         }
+
+        bannerAdView = findViewById(R.id.mainPageAdView);
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        bannerAdView.loadAd(adRequest);
+
+        bannerAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                bannerAdView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAdFailedToLoad(LoadAdError adError) {
+                bannerAdView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAdOpened() {
+                // Code to be executed when an ad opens an overlay that
+                // covers the screen.
+            }
+
+            @Override
+            public void onAdClicked() {
+                // Code to be executed when the user clicks on an ad.
+            }
+
+            @Override
+            public void onAdClosed() {
+                // Code to be executed when the user is about to return
+                // to the app after tapping on an ad.
+            }
+        });
 
         buttonAddCode.setOnClickListener(new View.OnClickListener() {
             @Override

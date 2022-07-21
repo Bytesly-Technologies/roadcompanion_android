@@ -21,7 +21,10 @@
             android:id="@+id/linearLayoutParkingStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="40dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginEnd="40dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
             android:background="@drawable/parking_status_background"
             android:orientation="vertical"
             android:paddingHorizontal="20dp"
@@ -44,14 +47,28 @@
                 android:textSize="28sp" />
         </LinearLayout>
 
+        <com.google.android.gms.ads.AdView
+            xmlns:ads="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/mainPageAdView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginStart="40dp"
+            android:layout_marginEnd="40dp"
+            android:layout_marginBottom="20dp"
+            ads:adSize="BANNER"
+            ads:adUnitId="ca-app-pub-2764486139832613/5476715395">
+        </com.google.android.gms.ads.AdView>
+
+
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/buttonOpenParking"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginStart="40dp"
             android:layout_marginEnd="40dp"
-            android:layout_weight="1"
             app:cornerRadius="20dp"
             android:text="@string/start_button" />
 
